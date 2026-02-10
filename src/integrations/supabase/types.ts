@@ -14,7 +14,228 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      coletas: {
+        Row: {
+          calc_taxa_engajamento: number | null
+          comentarios_bairros_cifrados: Json | null
+          comentarios_info: Json | null
+          created_at: string
+          curtidas_info: Json | null
+          data_coleta: string
+          hashtags_info: Json | null
+          hashtags_lista: string[] | null
+          hashtags_qtd: number | null
+          id: string
+          localizacao_bairro: string | null
+          localizacao_cidade: string | null
+          localizacao_estado: string | null
+          localizacao_nome: string | null
+          localizacao_pais: string | null
+          metricas_comentarios: number | null
+          metricas_compartilhamentos: number | null
+          metricas_curtidas: number | null
+          metricas_salvamentos: number | null
+          metricas_video_duracao: number | null
+          metricas_video_views: number | null
+          nome_perfil_analisado: string
+          perfil_biografia: string | null
+          perfil_categoria: string | null
+          perfil_foto_url: string | null
+          perfil_nome: string | null
+          perfil_posts_total: number | null
+          perfil_privado: boolean | null
+          perfil_seguidores: number | null
+          perfil_seguindo: number | null
+          perfil_url_bio: string | null
+          perfil_username: string | null
+          post_data: string | null
+          post_id: string | null
+          post_legenda: string | null
+          post_link: string | null
+          post_midias_info: Json | null
+          post_qtd_midias: number | null
+          post_tipo: string | null
+        }
+        Insert: {
+          calc_taxa_engajamento?: number | null
+          comentarios_bairros_cifrados?: Json | null
+          comentarios_info?: Json | null
+          created_at?: string
+          curtidas_info?: Json | null
+          data_coleta?: string
+          hashtags_info?: Json | null
+          hashtags_lista?: string[] | null
+          hashtags_qtd?: number | null
+          id?: string
+          localizacao_bairro?: string | null
+          localizacao_cidade?: string | null
+          localizacao_estado?: string | null
+          localizacao_nome?: string | null
+          localizacao_pais?: string | null
+          metricas_comentarios?: number | null
+          metricas_compartilhamentos?: number | null
+          metricas_curtidas?: number | null
+          metricas_salvamentos?: number | null
+          metricas_video_duracao?: number | null
+          metricas_video_views?: number | null
+          nome_perfil_analisado: string
+          perfil_biografia?: string | null
+          perfil_categoria?: string | null
+          perfil_foto_url?: string | null
+          perfil_nome?: string | null
+          perfil_posts_total?: number | null
+          perfil_privado?: boolean | null
+          perfil_seguidores?: number | null
+          perfil_seguindo?: number | null
+          perfil_url_bio?: string | null
+          perfil_username?: string | null
+          post_data?: string | null
+          post_id?: string | null
+          post_legenda?: string | null
+          post_link?: string | null
+          post_midias_info?: Json | null
+          post_qtd_midias?: number | null
+          post_tipo?: string | null
+        }
+        Update: {
+          calc_taxa_engajamento?: number | null
+          comentarios_bairros_cifrados?: Json | null
+          comentarios_info?: Json | null
+          created_at?: string
+          curtidas_info?: Json | null
+          data_coleta?: string
+          hashtags_info?: Json | null
+          hashtags_lista?: string[] | null
+          hashtags_qtd?: number | null
+          id?: string
+          localizacao_bairro?: string | null
+          localizacao_cidade?: string | null
+          localizacao_estado?: string | null
+          localizacao_nome?: string | null
+          localizacao_pais?: string | null
+          metricas_comentarios?: number | null
+          metricas_compartilhamentos?: number | null
+          metricas_curtidas?: number | null
+          metricas_salvamentos?: number | null
+          metricas_video_duracao?: number | null
+          metricas_video_views?: number | null
+          nome_perfil_analisado?: string
+          perfil_biografia?: string | null
+          perfil_categoria?: string | null
+          perfil_foto_url?: string | null
+          perfil_nome?: string | null
+          perfil_posts_total?: number | null
+          perfil_privado?: boolean | null
+          perfil_seguidores?: number | null
+          perfil_seguindo?: number | null
+          perfil_url_bio?: string | null
+          perfil_username?: string | null
+          post_data?: string | null
+          post_id?: string | null
+          post_legenda?: string | null
+          post_link?: string | null
+          post_midias_info?: Json | null
+          post_qtd_midias?: number | null
+          post_tipo?: string | null
+        }
+        Relationships: []
+      }
+      configuracoes: {
+        Row: {
+          chave: string
+          descricao: string | null
+          id: string
+          updated_at: string
+          valor: string | null
+        }
+        Insert: {
+          chave: string
+          descricao?: string | null
+          id?: string
+          updated_at?: string
+          valor?: string | null
+        }
+        Update: {
+          chave?: string
+          descricao?: string | null
+          id?: string
+          updated_at?: string
+          valor?: string | null
+        }
+        Relationships: []
+      }
+      perfis_monitorados: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          erro_ultima_coleta: string | null
+          id: string
+          intervalo_minutos: number
+          plataforma: string
+          status: string | null
+          total_coletas: number | null
+          ultima_coleta: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          erro_ultima_coleta?: string | null
+          id?: string
+          intervalo_minutos?: number
+          plataforma?: string
+          status?: string | null
+          total_coletas?: number | null
+          ultima_coleta?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          erro_ultima_coleta?: string | null
+          id?: string
+          intervalo_minutos?: number
+          plataforma?: string
+          status?: string | null
+          total_coletas?: number | null
+          ultima_coleta?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          created_at: string
+          detalhes: Json | null
+          duracao_ms: number | null
+          id: string
+          mensagem: string
+          modulo: string
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          detalhes?: Json | null
+          duracao_ms?: number | null
+          id?: string
+          mensagem: string
+          modulo: string
+          tipo?: string
+        }
+        Update: {
+          created_at?: string
+          detalhes?: Json | null
+          duracao_ms?: number | null
+          id?: string
+          mensagem?: string
+          modulo?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
