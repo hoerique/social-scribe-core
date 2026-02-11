@@ -21,7 +21,15 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { username, api_key } = body;
+    const { username, api_key, date_start, date_end, max_posts } = body;
+
+    // Converte datas para objetos Date se fornecidas
+    const startDate = date_start ? new Date(date_start) : null;
+    const endDate = date_end ? new Date(date_end) : null;
+
+    // Configura limite de posts (padrão 30, ou o que vier no request)
+    // Se o usuário quer "até a última gota", ele pode mandar um número alto (ex: 1000)
+    const limitParams = max_posts ? Number(max_posts) : 50;
 
     // Get API key from body or config
     let apiKey = api_key;
@@ -60,7 +68,7 @@ Deno.serve(async (req) => {
 
     for (const perfil of perfis) {
       const startTime = Date.now();
-      await log('info', 'scraper', `Iniciando coleta: @${perfil.username}`);
+      await log('info', 'scraper', `Iniciando coleta: @${perfil.username} (Limite: ${limitParams}, Filtro Data: ${startDate ? startDate.toISOString().split('T')[0] : 'Início'} até ${endDate ? endDate.toISOString().split('T')[0] : 'Fim'})`);
       await supabase.from('perfis_monitorados').update({ status: 'coletando' }).eq('id', perfil.id);
 
       try {
@@ -72,7 +80,7 @@ Deno.serve(async (req) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               usernames: [perfil.username],
-              resultsLimit: 30,
+              resultsLimit: limitParams,
             }),
           }
         );
@@ -83,13 +91,14 @@ Deno.serve(async (req) => {
         }
 
         const apifyData = await apifyResponse.json();
-        
+
         if (!apifyData || apifyData.length === 0) {
           throw new Error('Nenhum dado retornado pela API');
         }
 
         let insertedCount = 0;
         let updatedCount = 0;
+        let skippedCount = 0;
 
         for (const item of apifyData) {
           // Extract profile data and posts
@@ -111,6 +120,19 @@ Deno.serve(async (req) => {
           const posts = item.latestPosts || item.posts || [];
           if (Array.isArray(posts) && posts.length > 0) {
             for (const post of posts) {
+              const postDateStr = post.timestamp || post.takenAt || post.date;
+              const postDate = new Date(postDateStr);
+
+              // DATE FILTER CHECK
+              if (startDate && postDate < startDate) {
+                skippedCount++;
+                continue;
+              }
+              if (endDate && postDate > endDate) {
+                skippedCount++;
+                continue;
+              }
+
               const hashtags = extractHashtags(post.caption || post.text || '');
               const engagementRate = calculateEngagement(
                 (post.likesCount || post.likes || 0),
@@ -123,15 +145,15 @@ Deno.serve(async (req) => {
                 data_coleta: new Date().toISOString(),
                 post_id: post.id || post.shortCode || post.url,
                 post_link: post.url || (post.shortCode ? `https://www.instagram.com/p/${post.shortCode}/` : null),
-                post_data: post.timestamp || post.takenAt || post.date,
-                post_legenda: post.caption || post.text,
+                post_data: postDate.toISOString(),
+                post_legenda: post.caption || post.text || '',
                 post_tipo: post.type || (post.videoUrl ? 'video' : 'image'),
                 post_qtd_midias: post.images?.length || post.displayResources?.length || 1,
                 post_midias_info: post.displayResources || post.images || null,
                 metricas_curtidas: post.likesCount || post.likes || 0,
                 metricas_comentarios: post.commentsCount || post.comments || 0,
-                metricas_compartilhamentos: post.sharesCount || 0,
-                metricas_salvamentos: post.savesCount || 0,
+                metricas_compartilhamentos: post.sharesCount || 0, // Apify basic actor often doesn't return this
+                metricas_salvamentos: post.savesCount || 0, // Apify basic actor often doesn't return this
                 metricas_video_views: post.videoViewCount || post.videoPlayCount || 0,
                 metricas_video_duracao: post.videoDuration || null,
                 hashtags_lista: hashtags,
@@ -158,6 +180,9 @@ Deno.serve(async (req) => {
             }
           } else {
             // Profile-only data (no posts)
+            // Note: If filtering by date, we might still want to log the profile scrape? 
+            // Usually if filtering by date we care about posts. 
+            // But let's keep the profile snapshot if it was requested specifically.
             const coleta = {
               ...profileData,
               data_coleta: new Date().toISOString(),
@@ -176,13 +201,14 @@ Deno.serve(async (req) => {
           erro_ultima_coleta: null,
         }).eq('id', perfil.id);
 
-        await log('sucesso', 'scraper', `Coleta concluída: @${perfil.username} - ${insertedCount} novos, ${updatedCount} atualizados`, { insertedCount, updatedCount }, duration);
-        results.push({ username: perfil.username, success: true, inserted: insertedCount, updated: updatedCount, duration });
+        const msg = `Coleta concluída: @${perfil.username} - ${insertedCount} novos, ${updatedCount} ats, ${skippedCount} ignorados (filtro)`;
+        await log('sucesso', 'scraper', msg, { insertedCount, updatedCount, skippedCount }, duration);
+        results.push({ username: perfil.username, success: true, inserted: insertedCount, updated: updatedCount, skipped: skippedCount, duration });
 
       } catch (error) {
         const duration = Date.now() - startTime;
         const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-        
+
         await supabase.from('perfis_monitorados').update({
           status: 'erro',
           erro_ultima_coleta: errorMsg,

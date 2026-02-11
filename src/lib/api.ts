@@ -123,11 +123,17 @@ export const api = {
   },
 
   // Executar coleta
-  async executarColeta(username?: string): Promise<any> {
+  async executarColeta(options?: { username?: string, date_start?: string, date_end?: string, max_posts?: number }): Promise<any> {
     const { data: apiKeyConfig } = await supabase.from('configuracoes').select('valor').eq('chave', 'apify_api_key').maybeSingle();
-    
+
     const { data, error } = await supabase.functions.invoke('executar-coleta', {
-      body: { username, api_key: (apiKeyConfig as any)?.valor },
+      body: {
+        username: options?.username,
+        api_key: (apiKeyConfig as any)?.valor,
+        date_start: options?.date_start,
+        date_end: options?.date_end,
+        max_posts: options?.max_posts
+      },
     });
     if (error) throw error;
     return data;
